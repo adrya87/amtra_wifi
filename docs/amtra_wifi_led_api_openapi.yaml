@@ -1,0 +1,705 @@
+openapi: 3.0.3
+info:
+  title: AMTRA WiFi LED System Fresh API
+  version: "0.1.0"
+  description: |
+    Documentazione non ufficiale ricostruita tramite analisi del traffico dell'app AMTRA/AmtraWiFi.
+
+    Dispositivo testato:
+    - AMTRA LED System Fresh Wi-Fi
+    - ProductName Aliyun: CrociLedController
+    - ProductKey osservato: a3ihr8eqxii
+
+    Note:
+    - Tutte le chiamate dopo il login usano Authorization: bearer <access_token>.
+    - Le chiamate di lettura sono GET.
+    - set_properties è POST.
+    - Il campo `items` di set_properties è una stringa contenente JSON serializzato.
+    - Il binding/pairing del dispositivo viene gestito dall'app ufficiale e non da questa API spec.
+
+servers:
+  - url: http://47.89.235.158:8086
+    description: AMTRA cloud backend osservato
+
+tags:
+  - name: Auth
+    description: Autenticazione
+  - name: Discovery
+    description: Lista gruppi e dispositivi già associati
+  - name: Device Properties
+    description: Lettura e scrittura proprietà lampada
+  - name: Device Management
+    description: Gestione metadati dispositivo
+  - name: Firmware
+    description: Verifica firmware
+  - name: Aliyun Proxy
+    description: Endpoint proxy verso Alibaba Cloud IoT
+
+paths:
+  /login:
+    post:
+      tags:
+        - Auth
+      summary: Login applicativo
+      description: |
+        Effettua il login e restituisce un bearer token.
+
+        Il parametro `corpid` sembra essere un identificativo fisso dell'app/brand AMTRA.
+      parameters:
+        - name: corpid
+          in: query
+          required: true
+          schema:
+            type: string
+            example: a3MAuNKJuLP
+        - name: grant_type
+          in: query
+          required: true
+          schema:
+            type: string
+            example: app
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              principal: "password@example@email.com"
+              credentials: "PASSWORD"
+      responses:
+        "200":
+          description: Login effettuato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+              example:
+                access_token: "ACCESS_TOKEN"
+                token_type: "bearer"
+                refresh_token: "REFRESH_TOKEN"
+                expires_in: 99999
+                setPassword: false
+                code: 0
+                salt: "xxxxx"
+                nickName: ""
+                pic: null
+                competitionArea: false
+                secret: "SECRET"
+                userid: "USER_ID"
+
+  /device_comb/list:
+    get:
+      tags:
+        - Discovery
+      summary: Lista device comb
+      description: |
+        Endpoint chiamato dopo il login. Nel caso osservato restituisce `data: []`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userid
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "1727754614514364418"
+      responses:
+        "200":
+          description: Lista combinazioni dispositivi
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceCombListResponse"
+              example:
+                code: 0
+                msg: success
+                data: []
+
+  /groups_and_subscribed_devices:
+    get:
+      tags:
+        - Discovery
+      summary: Lista gruppi e dispositivi associati
+      description: |
+        Restituisce i gruppi e i dispositivi sottoscritti/associati all'account.
+        Per l'integrazione Home Assistant il dato più utile è `subscribed_devices`.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Gruppi e dispositivi
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupsAndSubscribedDevicesResponse"
+              example:
+                code: 0
+                msg: success
+                data:
+                  groups:
+                    - groupid: "1727754615009292290"
+                      name: "First Habitat"
+                      creator: "1727754614514364418"
+                      isDefault: true
+                      create_time: 1700763775000
+                      users:
+                        - userid: "1727754614514364418"
+                          nickname: "Adrya87"
+                          email: "user@example.com"
+                          role: "管理员"
+                      devices: []
+                  subscribed_devices:
+                    - mac: "40F520250D80"
+                      name: "Acquario muro"
+                      role: "管理员"
+                      iotid: "Xsuq2HVYp5JZwZ55thlF000404"
+                      product_key: "a3ihr8eqxii"
+                      device_name: "40F520250D80"
+                      is_online: "online"
+
+  /product/{product_key}/device/{device_name}/get_properties:
+    get:
+      tags:
+        - Device Properties
+      summary: Lettura proprietà dispositivo
+      description: |
+        Restituisce tutte le proprietà del dispositivo.
+
+        Alcuni valori sono stringhe JSON serializzate, ad esempio `DeviceInfo`, `Channel1`, `TimePoints`, ecc.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProductKey"
+        - $ref: "#/components/parameters/DeviceName"
+      responses:
+        "200":
+          description: Proprietà dispositivo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetPropertiesResponse"
+              example:
+                code: 0
+                msg: success
+                data:
+                  - identifier: FirmwareVersion
+                    dataType: int
+                    time: "1779185880092"
+                    value: "19"
+                    name: "固件版本"
+                  - identifier: DeviceInfo
+                    dataType: struct
+                    time: "1779185880092"
+                    value: "{"rssi":-42,"ip":"192.168.87.216","ssid":"Adry_Home","mac":"40:F5:20:25:0D:80"}"
+                    name: "设备信息"
+                  - identifier: Mode
+                    dataType: enum
+                    time: "1779185880092"
+                    value: "2"
+                    name: "模式"
+                  - identifier: Power
+                    dataType: bool
+                    time: "1779185880092"
+                    value: "0"
+                    name: "开关"
+                  - identifier: Chn1Bright
+                    dataType: int
+                    time: "1779185880092"
+                    value: "1000"
+                    name: "通道1亮度"
+                  - identifier: Chn2Bright
+                    dataType: int
+                    time: "1779185880092"
+                    value: "1000"
+                    name: "通道2亮度"
+                  - identifier: Chn3Bright
+                    dataType: int
+                    time: "1779185880092"
+                    value: "1000"
+                    name: "通道3亮度"
+                  - identifier: Chn4Bright
+                    dataType: int
+                    time: "1779185880092"
+                    value: "1000"
+                    name: "通道4亮度"
+                  - identifier: Chn5Bright
+                    dataType: int
+                    time: "1779185880092"
+                    value: "1000"
+                    name: "通道5亮度"
+
+  /product/{product_key}/device/{device_name}/set_properties:
+    post:
+      tags:
+        - Device Properties
+      summary: Scrittura proprietà dispositivo
+      description: |
+        Scrive una o più proprietà del dispositivo.
+
+        Attenzione: `items` è una stringa contenente JSON serializzato.
+
+        Esempio:
+        `{ "items": "{\"Power\":1,\"Mode\":0}" }`
+
+        Confermato:
+        - Supporta più proprietà nello stesso body.
+        - Supporta array, ad esempio `DayBrights` e `NightBrights`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProductKey"
+        - $ref: "#/components/parameters/DeviceName"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetPropertiesRequest"
+            examples:
+              powerOnManual:
+                summary: Accensione in manuale
+                value:
+                  items: "{"Power":1,"Mode":0}"
+              setFiveChannels:
+                summary: Imposta tutti i 5 canali
+                value:
+                  items: "{"Chn1Bright":502,"Chn2Bright":503,"Chn3Bright":502,"Chn4Bright":501,"Chn5Bright":500}"
+              easyProgram:
+                summary: Programma Easy completo
+                value:
+                  items: "{"Mode":2,"Sunrise":420,"SunriseRamp":120,"Sunset":960,"SunsetRamp":120,"DayBrights":[60,50,26,37,64],"NightBrights":[0,0,0,0,0]}"
+              powerOff:
+                summary: Spegnimento
+                value:
+                  items: "{"Power":0}"
+      responses:
+        "200":
+          description: Proprietà inviate correttamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetPropertiesResponse"
+              example:
+                code: 0
+                msg: success
+                data: "775806616"
+
+  /product/{product_key}/device/{device_name}/fota_check:
+    get:
+      tags:
+        - Firmware
+      summary: Verifica aggiornamenti firmware
+      description: Verifica la versione firmware e l'eventuale presenza di aggiornamenti disponibili.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProductKey"
+        - $ref: "#/components/parameters/DeviceName"
+      responses:
+        "200":
+          description: Stato firmware
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FotaCheckResponse"
+              example:
+                code: 0
+                msg: success
+                data:
+                  product_key: "a3ihr8eqxii"
+                  device_name: "40F520250D80"
+                  device_version: 19
+                  device_upgrading: false
+                  firmware_list: []
+
+  /product/{product_key}/device/{device_name}:
+    put:
+      tags:
+        - Device Management
+      summary: Rinomina dispositivo
+      description: Modifica il nome visualizzato del dispositivo.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProductKey"
+        - $ref: "#/components/parameters/DeviceName"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenameDeviceRequest"
+            example:
+              name: "Acquario muro"
+      responses:
+        "200":
+          description: Dispositivo rinominato
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericSuccessResponse"
+              example:
+                code: 0
+                msg: success
+
+  /aliyuncs/common:
+    post:
+      tags:
+        - Aliyun Proxy
+      summary: Proxy verso Alibaba Cloud IoT
+      description: |
+        Endpoint generico del backend AMTRA che inoltra azioni verso Aliyun/Alibaba Cloud IoT.
+
+        Osservata azione: `QueryDeviceDetail`.
+
+        La risposta `data` è una stringa JSON serializzata.
+
+        Nota di sicurezza:
+        la risposta può contenere `DeviceSecret`. Per una integrazione Home Assistant standard non dovrebbe essere usato né salvato.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AliyunCommonRequest"
+            example:
+              action: "QueryDeviceDetail"
+              params:
+                ProductKey: "a3ihr8eqxii"
+                DeviceName: "40F520250D80"
+      responses:
+        "200":
+          description: Risposta proxy Aliyun
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AliyunCommonResponse"
+              example:
+                code: 0
+                msg: success
+                data: "{"RequestId":"REQUEST_ID","Data":{"Status":"ONLINE","Owner":true,"ProductName":"CrociLedController","DeviceSecret":"DEVICE_SECRET","FirmwareVersion":"19","UtcOnline":"2026-06-26T09:35:48.767Z","IotId":"Xsuq2HVYp5JZwZ55thlF000404","GmtCreate":"2023-11-23 14:43:43","UtcCreate":"2023-11-23T06:43:43.000Z","UtcActive":"2023-11-23T22:43:52.134Z","GmtActive":"2023-11-24 06:43:52","NodeType":0,"Region":"us-west-1","IpAddress":"178.19.155.206","GmtOnline":"2026-06-26 17:35:48","ProductKey":"a3ihr8eqxii","DeviceName":"40F520250D80"},"Code":"","Success":true}"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque-token
+
+  parameters:
+    ProductKey:
+      name: product_key
+      in: path
+      required: true
+      schema:
+        type: string
+        example: a3ihr8eqxii
+    DeviceName:
+      name: device_name
+      in: path
+      required: true
+      schema:
+        type: string
+        example: 40F520250D80
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - principal
+        - credentials
+      properties:
+        principal:
+          type: string
+          description: Formato osservato `password@email`
+          example: "password@example@email.com"
+        credentials:
+          type: string
+          format: password
+          example: "PASSWORD"
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+        refresh_token:
+          type: string
+        expires_in:
+          type: integer
+          example: 99999
+        setPassword:
+          type: boolean
+        code:
+          type: integer
+          example: 0
+        salt:
+          type: string
+        nickName:
+          type: string
+        pic:
+          nullable: true
+        competitionArea:
+          type: boolean
+        secret:
+          type: string
+        userid:
+          type: string
+
+    GenericSuccessResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 0
+        msg:
+          type: string
+          example: success
+
+    DeviceCombListResponse:
+      allOf:
+        - $ref: "#/components/schemas/GenericSuccessResponse"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+
+    GroupsAndSubscribedDevicesResponse:
+      allOf:
+        - $ref: "#/components/schemas/GenericSuccessResponse"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                groups:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Group"
+                subscribed_devices:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/SubscribedDevice"
+
+    Group:
+      type: object
+      properties:
+        groupid:
+          type: string
+        name:
+          type: string
+        creator:
+          type: string
+        isDefault:
+          type: boolean
+        create_time:
+          type: integer
+          format: int64
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/GroupUser"
+        devices:
+          type: array
+          items:
+            type: object
+
+    GroupUser:
+      type: object
+      properties:
+        userid:
+          type: string
+        nickname:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          description: Valore osservato in cinese, es. 管理员
+
+    SubscribedDevice:
+      type: object
+      properties:
+        mac:
+          type: string
+          example: "40F520250D80"
+        name:
+          type: string
+          example: "Acquario muro"
+        role:
+          type: string
+        iotid:
+          type: string
+          example: "Xsuq2HVYp5JZwZ55thlF000404"
+        product_key:
+          type: string
+          example: "a3ihr8eqxii"
+        device_name:
+          type: string
+          example: "40F520250D80"
+        is_online:
+          type: string
+          enum:
+            - online
+            - offline
+          example: online
+
+    GetPropertiesResponse:
+      allOf:
+        - $ref: "#/components/schemas/GenericSuccessResponse"
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: "#/components/schemas/DeviceProperty"
+
+    DeviceProperty:
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: Nome tecnico proprietà
+          example: Power
+        dataType:
+          type: string
+          example: bool
+        time:
+          type: string
+          description: Timestamp in millisecondi come stringa, quando presente
+        value:
+          type: string
+          description: Valore proprietà. Spesso restituito come stringa anche per int/bool/array/struct.
+        name:
+          type: string
+          description: Nome descrittivo, spesso in cinese
+        unit:
+          type: string
+
+    SetPropertiesRequest:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: string
+          description: |
+            Stringa JSON serializzata contenente una o più proprietà.
+
+            Proprietà osservate:
+            - Power: 0 spento, 1 acceso
+            - Mode: 0 Manuale, 2 Easy
+            - Chn1Bright: Verde, range 0-1000
+            - Chn2Bright: Rosso, range 0-1000
+            - Chn3Bright: Blu, range 0-1000
+            - Chn4Bright: Bianco freddo, range 0-1000
+            - Chn5Bright: Bianco, range 0-1000
+            - Sunrise: minuti da mezzanotte
+            - SunriseRamp: minuti
+            - Sunset: minuti da mezzanotte
+            - SunsetRamp: minuti
+            - DayBrights: array [Verde, Rosso, Blu, Bianco freddo, Bianco], range 0-100
+            - NightBrights: array [Verde, Rosso, Blu, Bianco freddo, Bianco], range 0-100
+          example: "{"Power":1,"Mode":0}"
+
+    SetPropertiesResponse:
+      allOf:
+        - $ref: "#/components/schemas/GenericSuccessResponse"
+        - type: object
+          properties:
+            data:
+              type: string
+              description: ID/numero operazione restituito dal backend
+              example: "775806616"
+
+    FotaCheckResponse:
+      allOf:
+        - $ref: "#/components/schemas/GenericSuccessResponse"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/FotaCheckData"
+
+    FotaCheckData:
+      type: object
+      properties:
+        product_key:
+          type: string
+        device_name:
+          type: string
+        device_version:
+          type: integer
+        device_upgrading:
+          type: boolean
+        firmware_list:
+          type: array
+          items:
+            type: object
+
+    RenameDeviceRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "Acquario muro"
+
+    AliyunCommonRequest:
+      type: object
+      required:
+        - action
+        - params
+      properties:
+        action:
+          type: string
+          example: QueryDeviceDetail
+        params:
+          type: object
+          properties:
+            ProductKey:
+              type: string
+              example: a3ihr8eqxii
+            DeviceName:
+              type: string
+              example: 40F520250D80
+
+    AliyunCommonResponse:
+      allOf:
+        - $ref: "#/components/schemas/GenericSuccessResponse"
+        - type: object
+          properties:
+            data:
+              type: string
+              description: Stringa JSON serializzata restituita dal proxy Aliyun.
+
+x-amtra-notes:
+  channel_map:
+    Chn1Bright: Verde
+    Chn2Bright: Rosso
+    Chn3Bright: Blu
+    Chn4Bright: Bianco freddo
+    Chn5Bright: Bianco
+  arrays_order:
+    - Verde
+    - Rosso
+    - Blu
+    - Bianco freddo
+    - Bianco
+  mode_values:
+    "0": Manuale
+    "2": Easy
+  power_values:
+    "0": Spento
+    "1": Acceso
+  brightness_ranges:
+    manual_channels: "0-1000"
+    day_night_arrays: "0-100"

@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "AMTRA WiFi",
+        "description": "Accedi con le credenziali usate dall'app AMTRA.",
+        "data": {
+          "username": "Email",
+          "password": "Password",
+          "host": "Cloud host",
+          "corp_id": "Corp ID"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Connessione al cloud AMTRA non riuscita",
+      "invalid_auth": "Credenziali non valide"
+    },
+    "abort": {
+      "already_configured": "Questo account AMTRA WiFi è già configurato"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "firmware_version": {
+        "name": "Versione firmware"
+      },
+      "wifi_rssi": {
+        "name": "RSSI Wi-Fi"
+      }
+    }
+  }
+}
