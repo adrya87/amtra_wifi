@@ -7,7 +7,6 @@ from typing import Any, Callable
 
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfSignalStrength
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -32,7 +31,7 @@ SENSORS: tuple[AmtraWifiSensorDescription, ...] = (
     AmtraWifiSensorDescription(
         key="wifi_rssi",
         translation_key="wifi_rssi",
-        native_unit_of_measurement=UnitOfSignalStrength.DECIBELS_MILLIWATT,
+        native_unit_of_measurement="dBm",
         value_fn=lambda device, props: _device_info(props).get("rssi"),
     ),
 )
