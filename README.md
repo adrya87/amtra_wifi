@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/amtra_wifi_icon.svg" alt="AMTRA WiFi" width="160">
+</p>
+
 # AMTRA WiFi Home Assistant integration
 
 Custom integration sperimentale per controllare AMTRA LED System Fresh Wi-Fi tramite il cloud AMTRA osservato dall'app ufficiale.
@@ -20,6 +24,8 @@ Il pairing del dispositivo resta gestito dall'app ufficiale.
 3. Aggiungi l'integrazione da **Impostazioni > Dispositivi e servizi > Aggiungi integrazione > AMTRA WiFi**.
 
 Nel form inserisci la normale email dell'app AMTRA. L'integrazione costruisce automaticamente il `principal` cloud nel formato osservato `password@email`.
+
+Nelle opzioni dell'integrazione puoi configurare ogni quanti secondi Home Assistant deve rileggere lo stato dal cloud AMTRA. Il valore predefinito è 60 secondi.
 
 ## Note API
 

@@ -20,6 +20,17 @@
       "already_configured": "Questo account AMTRA WiFi è già configurato"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opzioni AMTRA WiFi",
+        "description": "Configura ogni quanti secondi Home Assistant deve rileggere lo stato dal cloud AMTRA.",
+        "data": {
+          "scan_interval": "Intervallo aggiornamento stato (secondi)"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "firmware_version": {

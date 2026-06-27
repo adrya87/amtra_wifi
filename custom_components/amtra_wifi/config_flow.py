@@ -12,7 +12,17 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import AmtraWifiApiClient, AmtraWifiAuthError, AmtraWifiError
-from .const import CONF_CORP_ID, CONF_HOST, DEFAULT_CORP_ID, DEFAULT_HOST, DOMAIN
+from .const import (
+    CONF_CORP_ID,
+    CONF_HOST,
+    CONF_SCAN_INTERVAL,
+    DEFAULT_CORP_ID,
+    DEFAULT_HOST,
+    DEFAULT_SCAN_INTERVAL_SECONDS,
+    DOMAIN,
+    MAX_SCAN_INTERVAL_SECONDS,
+    MIN_SCAN_INTERVAL_SECONDS,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -21,6 +31,13 @@ class AmtraWifiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle an AMTRA WiFi config flow."""
 
     VERSION = 1
+
+    @staticmethod
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        """Create the options flow."""
+        return AmtraWifiOptionsFlow(config_entry)
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -63,4 +80,39 @@ class AmtraWifiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 }
             ),
             errors=errors,
+        )
+
+
+class AmtraWifiOptionsFlow(config_entries.OptionsFlow):
+    """Handle AMTRA WiFi options."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialize options flow."""
+        self._config_entry = config_entry
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
+        """Manage integration options."""
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_SCAN_INTERVAL,
+                        default=self._config_entry.options.get(
+                            CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL_SECONDS
+                        ),
+                    ): vol.All(
+                        int,
+                        vol.Range(
+                            min=MIN_SCAN_INTERVAL_SECONDS,
+                            max=MAX_SCAN_INTERVAL_SECONDS,
+                        ),
+                    ),
+                }
+            ),
         )

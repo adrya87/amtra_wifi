@@ -19,17 +19,20 @@ from .coordinator import AmtraWifiCoordinator, AmtraWifiDevice
 class AmtraWifiSensorDescription(SensorEntityDescription):
     """AMTRA WiFi sensor description."""
 
+    name: str
     value_fn: Callable[[AmtraWifiDevice, dict[str, Any]], Any]
 
 
 SENSORS: tuple[AmtraWifiSensorDescription, ...] = (
     AmtraWifiSensorDescription(
         key="firmware_version",
+        name="Versione firmware",
         translation_key="firmware_version",
         value_fn=lambda device, props: props.get("FirmwareVersion"),
     ),
     AmtraWifiSensorDescription(
         key="wifi_rssi",
+        name="RSSI Wi-Fi",
         translation_key="wifi_rssi",
         native_unit_of_measurement="dBm",
         value_fn=lambda device, props: _device_info(props).get("rssi"),
@@ -66,6 +69,7 @@ class AmtraWifiSensor(CoordinatorEntity[AmtraWifiCoordinator], SensorEntity):
         super().__init__(coordinator)
         self._device = device
         self.entity_description = description
+        self._attr_name = f"{device.name} {description.name}"
         self._attr_unique_id = f"{device.unique_id}_{description.key}"
         self._attr_device_info = {
             "identifiers": {(DOMAIN, device.unique_id)},

@@ -12,8 +12,15 @@ from .const import CONF_CORP_ID, CONF_HOST, DEFAULT_CORP_ID, DEFAULT_HOST, DOMAI
 from .coordinator import AmtraWifiCoordinator
 
 
+async def _async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload AMTRA WiFi when options change."""
+    await hass.config_entries.async_reload(entry.entry_id)
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up AMTRA WiFi from a config entry."""
+    entry.async_on_unload(entry.add_update_listener(_async_update_options))
+
     client = AmtraWifiApiClient(
         async_get_clientsession(hass),
         entry.data[CONF_USERNAME],
