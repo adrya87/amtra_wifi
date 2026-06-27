@@ -18,7 +18,7 @@ CONF_CORP_ID = "corp_id"
 CONF_HOST = "host"
 CONF_SCAN_INTERVAL = "scan_interval"
 
-PLATFORMS = ["light", "number", "select", "sensor", "text"]
+PLATFORMS = ["light", "number", "select", "sensor", "text", "time"]
 
 CHANNELS = {
     "Chn1Bright": "green",

@@ -25,32 +25,17 @@ class AmtraWifiNumberDescription:
     maximum: float
     step: float
     unit: str | None = None
+    mode: NumberMode = NumberMode.BOX
     array_key: str | None = None
     array_index: int | None = None
 
 
-TIME_NUMBERS: tuple[AmtraWifiNumberDescription, ...] = (
-    AmtraWifiNumberDescription(
-        key="Sunrise",
-        name="Alba",
-        minimum=0,
-        maximum=1439,
-        step=1,
-        unit="min",
-    ),
+RAMP_NUMBERS: tuple[AmtraWifiNumberDescription, ...] = (
     AmtraWifiNumberDescription(
         key="SunriseRamp",
         name="Durata alba",
         minimum=0,
         maximum=1440,
-        step=1,
-        unit="min",
-    ),
-    AmtraWifiNumberDescription(
-        key="Sunset",
-        name="Tramonto",
-        minimum=0,
-        maximum=1439,
         step=1,
         unit="min",
     ),
@@ -72,6 +57,7 @@ ARRAY_NUMBERS = tuple(
         maximum=100,
         step=1,
         unit="%",
+        mode=NumberMode.SLIDER,
         array_key=array_key,
         array_index=index,
     )
@@ -79,7 +65,7 @@ ARRAY_NUMBERS = tuple(
     for index, channel in enumerate(EASY_CHANNEL_NAMES)
 )
 
-NUMBERS = TIME_NUMBERS + ARRAY_NUMBERS
+NUMBERS = RAMP_NUMBERS + ARRAY_NUMBERS
 
 
 async def async_setup_entry(
@@ -100,7 +86,6 @@ class AmtraWifiNumber(CoordinatorEntity[AmtraWifiCoordinator], NumberEntity):
     """AMTRA WiFi number entity."""
 
     _attr_has_entity_name = True
-    _attr_mode = NumberMode.BOX
 
     def __init__(
         self,
@@ -118,6 +103,7 @@ class AmtraWifiNumber(CoordinatorEntity[AmtraWifiCoordinator], NumberEntity):
         self._attr_native_max_value = description.maximum
         self._attr_native_step = description.step
         self._attr_native_unit_of_measurement = description.unit
+        self._attr_mode = description.mode
         self._attr_device_info = _device_info(device)
 
     @property

@@ -14,7 +14,7 @@ Implementazione iniziale:
 - discovery dei dispositivi associati all'account;
 - entità `light` RGBWW basata sui 5 canali documentati;
 - selezione modalità Manuale/Easy;
-- regolazione programma Easy: alba, tramonto, rampe e intensità giorno/notte per canale;
+- regolazione programma Easy: alba/tramonto come orari, rampe in minuti e intensità giorno/notte per canale tramite slider;
 - cambio nome cloud del dispositivo;
 - sensori diagnostici per firmware e RSSI Wi-Fi.
 
@@ -36,8 +36,9 @@ Per ogni dispositivo associato all'account vengono create:
 
 - una luce RGBWW principale;
 - un selettore modalità Manuale/Easy;
-- numeri per alba, durata alba, tramonto e durata tramonto;
-- numeri per intensità giorno e notte dei cinque canali;
+- orari per alba e tramonto;
+- numeri per durata alba e durata tramonto;
+- slider per intensità giorno e notte dei cinque canali;
 - un campo testo per rinominare il dispositivo sul cloud AMTRA;
 - sensori firmware e RSSI Wi-Fi.
 
