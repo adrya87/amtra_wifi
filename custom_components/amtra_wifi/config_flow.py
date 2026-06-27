@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import voluptuous as vol
@@ -12,6 +13,8 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import AmtraWifiApiClient, AmtraWifiAuthError, AmtraWifiError
 from .const import CONF_CORP_ID, CONF_HOST, DEFAULT_CORP_ID, DEFAULT_HOST, DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class AmtraWifiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -36,9 +39,11 @@ class AmtraWifiConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             try:
                 await client.login()
-            except AmtraWifiAuthError:
+            except AmtraWifiAuthError as err:
+                _LOGGER.warning("AMTRA WiFi authentication failed: %s", err)
                 errors["base"] = "invalid_auth"
-            except AmtraWifiError:
+            except AmtraWifiError as err:
+                _LOGGER.warning("AMTRA WiFi cloud connection failed: %s", err)
                 errors["base"] = "cannot_connect"
             else:
                 await self.async_set_unique_id(client.user_id or user_input[CONF_USERNAME])

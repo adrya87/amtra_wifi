@@ -31,6 +31,7 @@ class AmtraWifiApiClient:
     ) -> None:
         self._session = session
         self._username = username
+        self._principal = _format_principal(username)
         self._password = password
         self._host = host.rstrip("/")
         self._corp_id = corp_id
@@ -44,7 +45,7 @@ class AmtraWifiApiClient:
             "/login",
             authenticated=False,
             params={"corpid": self._corp_id, "grant_type": DEFAULT_GRANT_TYPE},
-            json={"principal": self._username, "credentials": self._password},
+            json={"principal": self._principal, "credentials": self._password},
         )
 
         token = data.get("access_token")
@@ -114,11 +115,19 @@ class AmtraWifiApiClient:
 
         if isinstance(data, dict) and data.get("code") not in (None, 0):
             message = data.get("msg") or "AMTRA WiFi API error"
-            if "auth" in message.lower() or "token" in message.lower():
+            if path == "/login" or "auth" in message.lower() or "token" in message.lower():
                 raise AmtraWifiAuthError(message)
             raise AmtraWifiError(message)
 
         return data
+
+
+def _format_principal(username: str) -> str:
+    """Return the principal format used by the AMTRA app."""
+    username = username.strip()
+    if username.startswith("password@"):
+        return username
+    return f"password@{username}"
 
 
 def _parse_property_value(value: Any) -> Any:

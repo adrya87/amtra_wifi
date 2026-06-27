@@ -19,6 +19,8 @@ Il pairing del dispositivo resta gestito dall'app ufficiale.
 2. Riavvia Home Assistant.
 3. Aggiungi l'integrazione da **Impostazioni > Dispositivi e servizi > Aggiungi integrazione > AMTRA WiFi**.
 
+Nel form inserisci la normale email dell'app AMTRA. L'integrazione costruisce automaticamente il `principal` cloud nel formato osservato `password@email`.
+
 ## Note API
 
 La documentazione OpenAPI di partenza è conservata in `docs/amtra_wifi_led_api_openapi.yaml`.
