@@ -72,7 +72,7 @@ class AmtraWifiSensor(CoordinatorEntity[AmtraWifiCoordinator], SensorEntity):
         self._device = device
         self.entity_description = description
         self._attr_name = description.name
-        self._attr_unique_id = f"{device.unique_id}_{description.key}"
+        self._attr_unique_id = f"{device.unique_id}_sensor_{description.key}"
         self._attr_device_info = {
             "identifiers": {(DOMAIN, device.unique_id)},
             "manufacturer": "AMTRA",

@@ -13,6 +13,9 @@ Implementazione iniziale:
 - login cloud con email e password dell'app AMTRA;
 - discovery dei dispositivi associati all'account;
 - entità `light` RGBWW basata sui 5 canali documentati;
+- selezione modalità Manuale/Easy;
+- regolazione programma Easy: alba, tramonto, rampe e intensità giorno/notte per canale;
+- cambio nome cloud del dispositivo;
 - sensori diagnostici per firmware e RSSI Wi-Fi.
 
 Il pairing del dispositivo resta gestito dall'app ufficiale.
@@ -26,6 +29,17 @@ Il pairing del dispositivo resta gestito dall'app ufficiale.
 Nel form inserisci la normale email dell'app AMTRA. L'integrazione costruisce automaticamente il `principal` cloud nel formato osservato `password@email`.
 
 Nelle opzioni dell'integrazione puoi configurare ogni quanti secondi Home Assistant deve rileggere lo stato dal cloud AMTRA. Il valore predefinito è 60 secondi.
+
+## Entità
+
+Per ogni dispositivo associato all'account vengono create:
+
+- una luce RGBWW principale;
+- un selettore modalità Manuale/Easy;
+- numeri per alba, durata alba, tramonto e durata tramonto;
+- numeri per intensità giorno e notte dei cinque canali;
+- un campo testo per rinominare il dispositivo sul cloud AMTRA;
+- sensori firmware e RSSI Wi-Fi.
 
 ## Note API
 

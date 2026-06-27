@@ -18,7 +18,7 @@ CONF_CORP_ID = "corp_id"
 CONF_HOST = "host"
 CONF_SCAN_INTERVAL = "scan_interval"
 
-PLATFORMS = ["light", "sensor"]
+PLATFORMS = ["light", "number", "select", "sensor", "text"]
 
 CHANNELS = {
     "Chn1Bright": "green",
@@ -38,3 +38,11 @@ CHANNEL_ORDER = (
 
 MODE_MANUAL = 0
 MODE_EASY = 2
+
+EASY_CHANNEL_NAMES = (
+    "Verde",
+    "Rosso",
+    "Blu",
+    "Bianco freddo",
+    "Bianco",
+)

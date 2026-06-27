@@ -84,6 +84,13 @@ class AmtraWifiApiClient:
         path = f"/product/{product_key}/device/{device_name}/set_properties"
         await self._request("post", path, json={"items": json.dumps(properties)})
 
+    async def async_rename_device(
+        self, product_key: str, device_name: str, name: str
+    ) -> None:
+        """Rename a device."""
+        path = f"/product/{product_key}/device/{device_name}"
+        await self._request("put", path, json={"name": name})
+
     async def _request(
         self,
         method: str,

@@ -98,6 +98,13 @@ class AmtraWifiCoordinator(DataUpdateCoordinator[AmtraWifiData]):
         )
         await self.async_request_refresh()
 
+    async def async_rename_device(self, device: AmtraWifiDevice, name: str) -> None:
+        """Rename a device and refresh coordinator data."""
+        await self.client.async_rename_device(
+            device.product_key, device.device_name, name
+        )
+        await self.async_request_refresh()
+
 
 def _device_from_payload(payload: dict[str, Any]) -> AmtraWifiDevice:
     """Build a device model from API payload."""
