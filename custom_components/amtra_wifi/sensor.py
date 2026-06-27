@@ -57,6 +57,8 @@ async def async_setup_entry(
 class AmtraWifiSensor(CoordinatorEntity[AmtraWifiCoordinator], SensorEntity):
     """AMTRA WiFi sensor."""
 
+    _attr_has_entity_name = True
+
     entity_description: AmtraWifiSensorDescription
 
     def __init__(
@@ -69,7 +71,7 @@ class AmtraWifiSensor(CoordinatorEntity[AmtraWifiCoordinator], SensorEntity):
         super().__init__(coordinator)
         self._device = device
         self.entity_description = description
-        self._attr_name = f"{device.name} {description.name}"
+        self._attr_name = description.name
         self._attr_unique_id = f"{device.unique_id}_{description.key}"
         self._attr_device_info = {
             "identifiers": {(DOMAIN, device.unique_id)},

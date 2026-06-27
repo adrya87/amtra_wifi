@@ -37,13 +37,14 @@ class AmtraWifiLight(CoordinatorEntity[AmtraWifiCoordinator], LightEntity):
     """AMTRA WiFi five-channel light."""
 
     _attr_color_mode = ColorMode.RGBWW
+    _attr_has_entity_name = True
+    _attr_name = None
     _attr_supported_color_modes = {ColorMode.RGBWW}
 
     def __init__(self, coordinator: AmtraWifiCoordinator, device: AmtraWifiDevice) -> None:
         """Initialize the light."""
         super().__init__(coordinator)
         self._device = device
-        self._attr_name = device.name
         self._attr_unique_id = f"{device.unique_id}_light"
         self._attr_device_info = {
             "identifiers": {(DOMAIN, device.unique_id)},
